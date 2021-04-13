@@ -52,6 +52,6 @@ Run like this:
 ``` shell
 % python example.py --table histories scan
 run scan histories
-% python tmp/hello.py --table histories query --key 1984
+% python example.py --table histories query --key 1984
 run query histories by 1984
 ```

@@ -4,5 +4,9 @@ include .envrc
 include Pipfile
 include Pipfile.lock
 include Makefile
-graft docs
-graft tests
+
+recursive-include tests *.py
+recursive-include doc *.py
+
+prune tests/.mypy_cache
+prune doc/runnable/.mypy_cache

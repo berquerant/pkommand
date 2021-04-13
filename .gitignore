@@ -1,0 +1,15 @@
+tmp/
+
+__pycache__/
+
+# tox and pytest
+.tox/
+.cache/
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+
+# coverage
+.coverage
+htmlcov/

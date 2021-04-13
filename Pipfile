@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+
+[dev-packages]
+pytest = "*"
+pytest-cov = "*"
+flake8 = "*"
+black = "==v20.8b1"
+check-manifest = "*"
+tox = "*"
+mypy = "*"
+isort = "*"
+pydocstyle = "*"
+coverage = "*"
+
+[requires]
+python_version = "3.8"

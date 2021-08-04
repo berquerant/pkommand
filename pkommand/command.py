@@ -40,9 +40,11 @@ class Command(ABC):
         """
 
     @classmethod
-    def register_parser(cls, subparsers: _SubParsersAction):
+    def register_parser(cls, subparsers: _SubParsersAction) -> ArgumentParser:
         """Register the command to subparser."""
-        cls.register(subparsers.add_parser(cls.name(), help=cls.help()))
+        p = subparsers.add_parser(cls.name(), help=cls.help())
+        cls.register(p)
+        return p
 
 
 class CommandClassDict:

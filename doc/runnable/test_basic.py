@@ -1,5 +1,3 @@
-import pytest
-
 import pkommand
 
 
@@ -27,29 +25,26 @@ def prepare():
 
 
 def test_run(capsys):
-    with pytest.raises(SystemExit):
-        prepare().run(["-h"])
+    prepare().run(["help"])
     assert (
-        """usage: pytest [-h] {hello} ...
+        """usage: pytest {help,hello} ...
 
 positional arguments:
-  {hello}
-    hello     say hello
-
-optional arguments:
-  -h, --help  show this help message and exit
+  {help,hello}
+    help        show help and exit
+    hello       say hello
 """
         == capsys.readouterr().out
     )
 
-    with pytest.raises(SystemExit):
-        prepare().run(["hello", "-h"])
+    prepare().run(["help", "hello"])
     assert (
-        """usage: pytest hello [-h] [--target TARGET]
+        """usage: pytest hello [--target TARGET]
 
 optional arguments:
-  -h, --help       show this help message and exit
   --target TARGET
+
+say hello
 """
         == capsys.readouterr().out
     )

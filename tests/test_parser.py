@@ -7,8 +7,17 @@ import pkommand.parser as parser
 
 
 def test_no_subcommands():
-    with pytest.raises(parser.NoSubcommandsException):
+    with pytest.raises(SystemExit):
         parser.Parser().run()
+
+
+def test_no_subcommands_on_exception():
+    class Parser(parser.Parser):
+        def on_parse_exception(self, exc: Exception, file=None):
+            raise exc
+
+    with pytest.raises(parser.NoDefaultRunException):
+        Parser().run([])
 
 
 class ZeroCommand(parser.Command):
@@ -60,14 +69,12 @@ def test_parse_exception():
         p.run(args=["unary", "--target", "TARGET"])
     assert (
         """argument --target: invalid int value: 'TARGET'
-usage: pytest [-h] {unary} ...
+usage: pytest {help,unary} ...
 
 positional arguments:
-  {unary}
-    unary     unary_help
-
-optional arguments:
-  -h, --help  show this help message and exit
+  {help,unary}
+    help        show help and exit
+    unary       unary_help
 """
         == b.getvalue()
     )
@@ -77,30 +84,40 @@ optional arguments:
     "title,cmds,args,want_output,want_exc",
     [
         (
-            "zero help",
+            "zero help help",
             [ZeroCommand],
-            ["-h"],
-            """usage: pytest [-h] {zero} ...
+            ["help", "help"],
+            """usage: pytest help [subcommand]
 
 positional arguments:
-  {zero}
-    zero      zero_help
+  subcommand
 
-optional arguments:
-  -h, --help  show this help message and exit
+show help and exit
 """,
-            SystemExit,
+            None,
+        ),
+        (
+            "zero help",
+            [ZeroCommand],
+            ["help"],
+            """usage: pytest {help,zero} ...
+
+positional arguments:
+  {help,zero}
+    help       show help and exit
+    zero       zero_help
+""",
+            None,
         ),
         (
             "zero subhelp",
             [ZeroCommand],
-            ["zero", "-h"],
-            """usage: pytest zero [-h]
+            ["help", "zero"],
+            """usage: pytest zero
 
-optional arguments:
-  -h, --help  show this help message and exit
+zero_help
 """,
-            SystemExit,
+            None,
         ),
         (
             "zero run",
@@ -112,41 +129,39 @@ optional arguments:
         (
             "zero+unary help",
             [ZeroCommand, UnaryCommand],
-            ["-h"],
-            """usage: pytest [-h] {zero,unary} ...
+            ["help"],
+            """usage: pytest {help,zero,unary} ...
 
 positional arguments:
-  {zero,unary}
-    zero        zero_help
-    unary       unary_help
-
-optional arguments:
-  -h, --help    show this help message and exit
+  {help,zero,unary}
+    help             show help and exit
+    zero             zero_help
+    unary            unary_help
 """,
-            SystemExit,
+            None,
         ),
         (
             "zero+unary zero subhelp",
             [ZeroCommand, UnaryCommand],
-            ["zero", "-h"],
-            """usage: pytest zero [-h]
+            ["help", "zero"],
+            """usage: pytest zero
 
-optional arguments:
-  -h, --help  show this help message and exit
+zero_help
 """,
-            SystemExit,
+            None,
         ),
         (
             "zero+unary unary subhelp",
             [ZeroCommand, UnaryCommand],
-            ["unary", "-h"],
-            """usage: pytest unary [-h] [--target TARGET]
+            ["help", "unary"],
+            """usage: pytest unary [--target TARGET]
 
 optional arguments:
-  -h, --help       show this help message and exit
   --target TARGET  target_help
+
+unary_help
 """,
-            SystemExit,
+            None,
         ),
         (
             "zero+unary zero run",

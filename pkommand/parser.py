@@ -1,8 +1,8 @@
 """This module contains :class: `argparse.ArgumentParser` extensions for subcommand."""
 
 import sys
-from argparse import ArgumentParser
-from typing import Dict, List, Optional
+from argparse import ArgumentParser, Namespace
+from typing import Callable, Dict, List, Optional
 
 from .command import Command, CommandClassDict
 from .exceptions import NoDefaultRunException, NoSubcommandsException, ParserException
@@ -27,15 +27,40 @@ class HelpCommand(Command):
         parser.add_argument("subcommand", nargs="?")
 
 
+def default_run_print_help(
+    parser: ArgumentParser,
+    args: Optional[List[str]] = None,
+    namespace: Optional[Namespace] = None,
+):
+    """Print help of `parser`."""
+    parser.print_help()
+
+
 class Parser(ArgumentParser):
     """An ArgumentParser using :class: `Command`."""
 
     __ccd: CommandClassDict
     __subparsers: Dict[str, ArgumentParser]
+    __default_run: Optional[
+        Callable[[ArgumentParser, Optional[List[str]], Optional[Namespace]], None]
+    ]
 
-    def __init__(self, *args, **kwargs):  # noqa
-        kwargs["add_help"] = False
+    def __init__(
+        self,
+        add_help=False,
+        default_run: Optional[
+            Callable[[ArgumentParser, Optional[List[str]], Optional[Namespace]], None]
+        ] = default_run_print_help,
+        *args,
+        **kwargs
+    ):  # noqa
+        """Return a new `Parser`.
+
+        :add_help: add `-h/--help` option.
+        :default_run: set default_run function. This has the same effect as overriding `default_run`."""
+        kwargs["add_help"] = add_help
         super().__init__(*args, **kwargs)
+        self.__default_run = default_run
         self.__ccd = CommandClassDict()
         self.add_command_class(HelpCommand)
         self.__subparsers = {}
@@ -95,7 +120,9 @@ class Parser(ArgumentParser):
             return
         self._get_command_instance(args.command).run(args)
 
-    def default_run(self, args=None, namespace=None):
+    def default_run(
+        self, args: Optional[List[str]] = None, namespace: Optional[Namespace] = None
+    ):
         """Execute a process when no subcommand specified.
 
         You can override this if you also want to run without subcommand name.
@@ -103,6 +130,9 @@ class Parser(ArgumentParser):
         :param args: (optional) string list to be parsed
         :param namespace: (optional) object to be assigned attributes
         """
+        if self.__default_run:
+            self.__default_run(self, args, namespace)
+            return
         raise NoDefaultRunException()
 
     def parse_args(self, args=None, namespace=None):  # noqa

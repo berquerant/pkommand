@@ -11,13 +11,49 @@ def test_no_subcommands():
         parser.Parser().run()
 
 
+def test_no_subcommands_default_run():
+    b = StringIO()
+    with redirect_stdout(b):
+        parser.Parser().run([])
+    assert (
+        b.getvalue()
+        == """usage: pytest {help} ...
+
+positional arguments:
+  {help}
+    help  show help and exit
+"""
+    )
+
+
 def test_no_subcommands_on_exception():
     class Parser(parser.Parser):
         def on_parse_exception(self, exc: Exception, file=None):
             raise exc
 
     with pytest.raises(parser.NoDefaultRunException):
+        Parser(default_run=None).run([])
+
+
+def test_default_run_override():
+    class Parser(parser.Parser):
+        def default_run(self, args, namespace):
+            print("Parser.default_run()")
+
+    b = StringIO()
+    with redirect_stdout(b):
         Parser().run([])
+    assert b.getvalue() == "Parser.default_run()\n"
+
+
+def test_default_run_by_option():
+    def default_run(parser, args, namespace):
+        print("default_run()")
+
+    b = StringIO()
+    with redirect_stdout(b):
+        parser.Parser(default_run=default_run).run([])
+    assert b.getvalue() == "default_run()\n"
 
 
 class ZeroCommand(parser.Command):
@@ -55,7 +91,7 @@ class UnaryCommand(parser.Command):
 
 
 def test_default_run_exception():
-    p = parser.Parser()
+    p = parser.Parser(default_run=None)
     p.add_command_class(UnaryCommand)
     with pytest.raises(parser.NoDefaultRunException):
         p.run(args=[])

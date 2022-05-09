@@ -5,16 +5,16 @@ clean:
 	@pipenv run tox -e clean
 
 .PHONY: check
-check: check-manifest  # Run lints, format checks.
-	@pipenv run tox -e black,isort,flake8,mypy,pydocstyle -p 2
+check: # Run lints, format checks.
+	@pipenv run tox -e black,isort,flake8,mypy -p 2
 
-.PHONY: check-manifest
-check-manifest:  # Run check-manifest
-	@pipenv run tox -e check-manifest
+.PHONY: checkdoc
+checkdoc:
+	@pipenv run tox -e pydocstyle
 
 .PHONY: test
 test:  # Run tests.
-	@pipenv run tox -e py38,coverage-report
+	@pipenv run tox -e py310,coverage-report
 
 .PHONY: fix
 fix:  # Format py sources.

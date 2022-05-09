@@ -1,27 +1,15 @@
 import pkommand
 
 
-class HelloCommand(pkommand.Command):
-    @staticmethod
-    def name():
-        return "hello"
-
-    @classmethod
-    def help(cls):
-        return "say hello"
-
-    def run(self, args):
-        print("hello {}!".format(args.target))
-
-    @classmethod
-    def register(cls, parser):
-        parser.add_argument("--target", action="store", type=str)
+def hello(target: str):
+    """say hello"""
+    print(f"hello {target}!")
 
 
 def prepare():
-    p = pkommand.Parser()
-    p.add_command_class(HelloCommand)
-    return p
+    w = pkommand.Wrapper.default()
+    w.add(hello)
+    return w
 
 
 def test_run(capsys):
@@ -39,7 +27,7 @@ positional arguments:
 
     prepare().run(["help", "hello"])
     assert (
-        """usage: pytest hello [--target TARGET]
+        """usage: pytest hello --target TARGET
 
 options:
   --target TARGET

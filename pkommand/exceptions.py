@@ -11,3 +11,11 @@ class NoSubcommandsException(ParserException):
 
 class NoDefaultRunException(ParserException):
     """An exception when :class: `Parser` without default run implementation."""
+
+
+class WrapperException(Exception):
+    """An exception from wrapper module."""
+
+
+class ContainerException(Exception):
+    """An exception from container."""

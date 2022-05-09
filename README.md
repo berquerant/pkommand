@@ -2,6 +2,8 @@
 
 pkommand is a small subcommand parser library.
 
+## Class-based
+
 ``` python
 import pkommand
 
@@ -53,5 +55,36 @@ Run like this:
 % python example.py --table histories scan
 run scan histories
 % python example.py --table histories query --key 1984
+run query histories by 1984
+```
+
+## Function-based
+
+``` python
+from pkommand import Parser, Wrapper
+
+
+def scan(table: str):
+    """do scan"""
+    print(f"run scan {table}")
+
+
+def query(table: str, key: str):
+    """do query"""
+    print(f"run query {table} by {key}")
+
+
+w = Wrapper(Parser("cli"))
+w.add(scan)
+w.add(query)
+w.run()
+```
+
+Run like this:
+
+``` shell
+❯ python exmaple.py scan --table histories
+run scan histories
+❯ python example.py query --table histories --key 1984
 run query histories by 1984
 ```

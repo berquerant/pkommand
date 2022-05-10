@@ -217,6 +217,54 @@ zero_help
     ],
 )
 def test_run(title: str, func: Callable, args: list[str], want: str):
+    w = wrapper.Wrapper.default(abbr=False)
+    w.add(func)
+
+    def f():
+        b = StringIO()
+        with redirect_stdout(b):
+            w.run(args=args)
+        return b.getvalue()
+
+    assert want == f(), title
+
+
+def jump(world: str, t: str):
+    """jump to the world point"""
+    print(f"jump to {world}, {t}")
+
+
+@pytest.mark.parametrize(
+    "title,func,args,want",
+    [
+        (
+            "mix",
+            jump,
+            ["jump", "--world", "Phantomile", "-t", "1000"],
+            "jump to Phantomile, 1000\n",
+        ),
+        (
+            "abbr",
+            jump,
+            ["jump", "-w", "Lunatea", "-t", "0"],
+            "jump to Lunatea, 0\n",
+        ),
+        (
+            "help",
+            jump,
+            ["help", "jump"],
+            """usage: pytest jump -w WORLD -t T
+
+options:
+  -w WORLD, --world WORLD
+  -t T
+
+jump to the world point
+""",
+        ),
+    ],
+)
+def test_run_abbr(title: str, func: Callable, args: list[str], want: str):
     w = wrapper.Wrapper.default()
     w.add(func)
 

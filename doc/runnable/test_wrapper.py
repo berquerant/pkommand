@@ -27,10 +27,10 @@ positional arguments:
 
     prepare().run(["help", "hello"])
     assert (
-        """usage: pytest hello --target TARGET
+        """usage: pytest hello -t TARGET
 
 options:
-  --target TARGET
+  -t TARGET, --target TARGET
 
 say hello
 """

@@ -72,11 +72,12 @@ class Param:
     """Wrapper of `inspect.Parameter`."""
 
     p: Parameter
+    abbr: bool = False
 
     @staticmethod
-    def new(p: Parameter) -> "Param":
+    def new(p: Parameter, abbr: bool = False) -> "Param":
         """Return a new `Param`."""
-        return Param(p=p)
+        return Param(p=p, abbr=abbr)
 
     @property
     def name(self) -> str:
@@ -94,9 +95,16 @@ class Param:
         return Default.new(self.p)
 
     @property
-    def flag_name(self) -> str:
-        """Name of the parameter as a CLI flag."""
-        return f"--{self.p.name}"
+    def flag_names(self) -> list[str]:
+        """Names of the parameter as a CLI flag."""
+        name = self.p.name
+        normal = f"--{name}"
+        if not self.abbr:
+            return [normal]
+        abbr = f"-{name[0]}"
+        if len(self.p.name) == 1:
+            return [abbr]
+        return [abbr, normal]
 
     def __str__(self) -> str:
         return str(self.p)
@@ -146,7 +154,7 @@ class BoolParamToArg(ParamToArg):
         ).get_or("store_true")
         return Opt.some(
             RegArg(
-                args=[p.flag_name],
+                args=p.flag_names,
                 kwargs={
                     "action": action,
                 },
@@ -168,7 +176,7 @@ class DefaultParamToArg(ParamToArg):
             kwargs["default"] = p.default.get().val
         else:
             kwargs["required"] = True
-        return Opt.some(RegArg(args=[p.flag_name], kwargs=kwargs))
+        return Opt.some(RegArg(args=p.flag_names, kwargs=kwargs))
 
 
 class OptionalParamToArg(ParamToArg):
@@ -182,7 +190,7 @@ class OptionalParamToArg(ParamToArg):
             "type": a.type,
             "default": p.default.get().val if p.default.is_some else None,
         }
-        return Opt.some(RegArg(args=[p.flag_name], kwargs=kwargs))
+        return Opt.some(RegArg(args=p.flag_names, kwargs=kwargs))
 
 
 class ListParamToArg(ParamToArg):
@@ -198,7 +206,7 @@ class ListParamToArg(ParamToArg):
             "nargs": "*",
             "default": p.default.get().val if p.default.is_some else [],
         }
-        return Opt.some(RegArg(args=[p.flag_name], kwargs=kwargs))
+        return Opt.some(RegArg(args=p.flag_names, kwargs=kwargs))
 
 
 @dataclass
@@ -290,17 +298,17 @@ class CustomParamToArg(ParamToArg):
             kwargs["default"] = p.default.get().val
         else:
             kwargs["required"] = True
-        return Opt.some(RegArg(args=[p.flag_name], kwargs=kwargs))
+        return Opt.some(RegArg(args=p.flag_names, kwargs=kwargs))
 
 
 class RegArgGenerator:
     @classmethod
-    def generate(cls, f: Function) -> RegArgList:
-        return RegArgList([cls.parse(x) for x in f.signature.parameters.values()])
+    def generate(cls, f: Function, abbr: bool = False) -> RegArgList:
+        return RegArgList([cls.parse(x, abbr) for x in f.signature.parameters.values()])
 
     @staticmethod
-    def parse(parameter: Parameter) -> RegArg:
-        param = Param.new(parameter)
+    def parse(parameter: Parameter, abbr: bool = False) -> RegArg:
+        param = Param.new(parameter, abbr)
         parsers: list[ParamToArg] = [
             CustomParamToArg(),
             BoolParamToArg(),
@@ -328,15 +336,15 @@ class CommandGenerator:
             raise BadTargetException(f"{f} cannot accept lambda")
         return CommandGenerator(func=Function.new(f))
 
-    def regargs(self) -> RegArgList:
-        return RegArgGenerator.generate(self.func)
+    def regargs(self, abbr: bool = False) -> RegArgList:
+        return RegArgGenerator.generate(self.func, abbr)
 
     def class_name(self) -> str:
         return f"pk_generated_{self.func.name}"
 
-    def generate(self) -> type:
+    def generate(self, abbr: bool = False) -> type:
         """Generate `Command` class definition."""
-        regargs = self.regargs()
+        regargs = self.regargs(abbr)
         this = self
 
         def name() -> str:
@@ -421,18 +429,42 @@ class Wrapper:
     # hello alice!
     # hello bob!
     ```
+
+    Abbreviated flags are added automatically.
+    For example,
+    ```
+    def f(name: str):
+        ...
+    ```
+    `name` can be specified by `--name` and `-n`.
+    ```
+    def f(n: str):
+        ...
+    ```
+    `n` can be only specified by `-n` because it cannnot be abbreviated.
+    ```
+    def f(name: str, next: int):
+        ...
+    ```
+    causes conflict, abbreviations of `name` and `next` are the same `-n`.
+
+    Prevent abbreviations by:
+    ```
+    w = Wrapper.default(abbr=False)
+    ```
     """
 
-    def __init__(self, parser: Parser):
+    def __init__(self, parser: Parser, abbr: bool = True):
         self.parser = parser
+        self.abbr = abbr
 
     @staticmethod
-    def default() -> "Wrapper":
-        return Wrapper(Parser())
+    def default(abbr: bool = True) -> "Wrapper":
+        return Wrapper(Parser(), abbr)
 
     def add(self, func: Callable):
         """Add new `func` to CLI as a subcommand."""
-        klass = CommandGenerator.new(func).generate()
+        klass = CommandGenerator.new(func).generate(self.abbr)
         self.parser.add_command_class(klass)
 
     def run(self, args=None, namespace=None):

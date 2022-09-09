@@ -3,6 +3,7 @@ from argparse import Action, ArgumentParser, Namespace
 from dataclasses import dataclass
 from functools import cached_property
 from inspect import Parameter, Signature, isfunction, signature
+from textwrap import dedent
 from typing import Any, Callable, Protocol, cast
 
 from .command import Command
@@ -351,7 +352,7 @@ class CommandGenerator:
             return this.func.name
 
         def _help(cls) -> str:
-            return this.func.doc
+            return dedent(this.func.doc).strip()
 
         def register(cls, parser: ArgumentParser):
             regargs.apply(parser)

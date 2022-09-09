@@ -275,3 +275,67 @@ def test_run_abbr(title: str, func: Callable, args: list[str], want: str):
         return b.getvalue()
 
     assert want == f(), title
+
+
+def doc_simple():
+    """one line."""
+
+
+def doc_indent():
+    """
+    indented.
+    """
+
+
+def doc_multiple():
+    """
+    multiple
+    lines.
+      indent
+    """
+
+
+@pytest.mark.parametrize(
+    "title,args,want",
+    [
+        (
+            "simple",
+            ["help", "doc_simple"],
+            """usage: pytest doc_simple
+
+one line.
+""",
+        ),
+        (
+            "indented",
+            ["help", "doc_indent"],
+            """usage: pytest doc_indent
+
+indented.
+""",
+        ),
+        (
+            "multiple",
+            ["help", "doc_multiple"],
+            """usage: pytest doc_multiple
+
+multiple
+lines.
+  indent
+""",
+        ),
+    ],
+)
+def test_run_doc(title: str, args: list[str], want: str):
+    w = wrapper.Wrapper.default()
+    w.add(doc_simple)
+    w.add(doc_indent)
+    w.add(doc_multiple)
+
+    def f():
+        b = StringIO()
+        with redirect_stdout(b):
+            w.run(args=args)
+        return b.getvalue()
+
+    assert want == f(), title

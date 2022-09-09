@@ -52,7 +52,7 @@ class Parser(ArgumentParser):
             Callable[[ArgumentParser, Optional[List[str]], Optional[Namespace]], None]
         ] = default_run_print_help,
         *args,
-        **kwargs
+        **kwargs,
     ):  # noqa
         """Return a new `Parser`.
 
@@ -114,9 +114,15 @@ class Parser(ArgumentParser):
             if not args.subcommand:
                 self.print_help()
                 return
-            self._get_subparser(args.subcommand).print_help()
+            subparser = self._get_subparser(args.subcommand)
+            instance = self._get_command_instance(args.subcommand)
+            if not (subparser and instance):
+                print(f"unknown command: {args.subcommand}", file=sys.stderr)
+                self.print_help()
+                return
+            subparser.print_help()
             print()
-            print(self._get_command_instance(args.subcommand).help())
+            print(instance.help())
             return
         self._get_command_instance(args.command).run(args)
 

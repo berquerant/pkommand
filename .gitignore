@@ -2,6 +2,9 @@ tmp/
 
 __pycache__/
 
+.ropeproject/
+dist/
+
 *.egg-info
 
 # tox and pytest

@@ -1,3 +1,4 @@
+"""This module provides a function-based CLI."""
 from abc import ABC, abstractmethod
 from argparse import Action, ArgumentParser, Namespace
 from dataclasses import dataclass
@@ -47,6 +48,7 @@ class Annotation:
     def name(self) -> str:
         """
         Name of the annotation.
+
         e.g. List of List[T], Optional of Optional[T]
         """
         return get_attribute(self.typ, "_name").get_or(self.typ.__name__)
@@ -54,7 +56,9 @@ class Annotation:
     @property
     def type(self) -> Any:
         """
-        # e.g. bool of bool, T of List[T], Optional[T]
+        Type of the annotation.
+
+        e.g. bool of bool, T of List[T], Optional[T]
         """
         return (
             get_attribute(self.typ, "__args__")
@@ -92,7 +96,7 @@ class Param:
 
     @property
     def default(self) -> Opt[Default]:
-        """Default value of the parameter."""
+        """Return default value of the parameter."""
         return Default.new(self.p)
 
     @property
@@ -108,6 +112,7 @@ class Param:
         return [abbr, normal]
 
     def __str__(self) -> str:
+        """Return a string expression."""
         return str(self.p)
 
 
@@ -124,6 +129,8 @@ class RegArg:
 
 
 class RegArgList(list[RegArg]):
+    """List of `RegArg`."""
+
     def apply(self, p: ArgumentParser):
         """Call `add_argument`."""
         for a in self:
@@ -139,6 +146,7 @@ class ParamToArg(ABC):
         return Opt.none()
 
     def __call__(self, p: Param) -> Opt[RegArg]:
+        """Convert a function parameter into `RegArg`."""
         return p.annotation.and_then(lambda _: self.parse(p)).flatten()
 
 
@@ -146,6 +154,7 @@ class BoolParamToArg(ParamToArg):
     """Bool parameter to `RegArg` converter."""
 
     def parse(self, p: Param) -> Opt[RegArg]:
+        """Parse a function parameter into `RegArg`."""
         a = p.annotation.get()
         if a.type != bool or a.wrapped:
             return Opt.none()
@@ -167,6 +176,7 @@ class DefaultParamToArg(ParamToArg):
     """Default parameter to `RegArg` converter."""
 
     def parse(self, p: Param) -> Opt[RegArg]:
+        """Parse a function parameter into `RegArg`."""
         a = p.annotation.get()
         if a.wrapped:
             return Opt.none()
@@ -184,6 +194,7 @@ class OptionalParamToArg(ParamToArg):
     """Optional parameter to `RegArg` converter."""
 
     def parse(self, p: Param) -> Opt[RegArg]:
+        """Parse a function parameter into `RegArg`."""
         a = p.annotation.get()
         if not (a.wrapped and a.name == "Optional"):
             return Opt.none()
@@ -198,6 +209,7 @@ class ListParamToArg(ParamToArg):
     """List parameter to `RegArg` converter."""
 
     def parse(self, p: Param) -> Opt[RegArg]:
+        """Parse a function parameter into `RegArg`."""
         a = p.annotation.get()
         if not (a.wrapped and a.name in ["list", "List"]):
             return Opt.none()
@@ -212,24 +224,30 @@ class ListParamToArg(ParamToArg):
 
 @dataclass
 class Function:
+    """Function wrapper."""
+
     func: Callable
 
     @property
     def name(self) -> str:
+        """Name of function."""
         return self.func.__name__
 
     @property
     def doc(self) -> str:
+        """Docstring of function."""
         if self.func.__doc__:
             return self.func.__doc__
         return ""
 
     @cached_property
     def signature(self) -> Signature:
+        """Signature of function."""
         return signature(self.func)
 
     @staticmethod
     def new(func: Callable) -> "Function":
+        """Return a new `Function`."""
         return Function(func=func)
 
 
@@ -261,6 +279,7 @@ class CustomParamToArg(ParamToArg):
         return len(parsef.signature.parameters) == 1
 
     def parse(self, p: Param) -> Opt[RegArg]:
+        """Parse a function parameter into `RegArg`."""
         a = p.annotation.get()
 
         if not self.validate(p):
@@ -303,12 +322,16 @@ class CustomParamToArg(ParamToArg):
 
 
 class RegArgGenerator:
+    """Function to command arguments converter."""
+
     @classmethod
     def generate(cls, f: Function, abbr: bool = False) -> RegArgList:
+        """Generate command arguments."""
         return RegArgList([cls.parse(x, abbr) for x in f.signature.parameters.values()])
 
     @staticmethod
     def parse(parameter: Parameter, abbr: bool = False) -> RegArg:
+        """Parse a function parameter as a command argument."""
         param = Param.new(parameter, abbr)
         parsers: list[ParamToArg] = [
             CustomParamToArg(),
@@ -326,11 +349,13 @@ class RegArgGenerator:
 
 @dataclass
 class CommandGenerator:
-    def __init__(self, func: Function):
-        self.func = func
+    """Function to `Command` converter."""
+
+    func: Function
 
     @staticmethod
     def new(f: Callable) -> "CommandGenerator":
+        """Return a new `CommandGenerator`."""
         if not isfunction(f):
             raise BadTargetException(f"{f} not a function")
         if f.__name__ == "<lambda>":
@@ -338,9 +363,11 @@ class CommandGenerator:
         return CommandGenerator(func=Function.new(f))
 
     def regargs(self, abbr: bool = False) -> RegArgList:
+        """Generate `RegArgList`."""
         return RegArgGenerator.generate(self.func, abbr)
 
     def class_name(self) -> str:
+        """Return the name of a class to be generated."""
         return f"pk_generated_{self.func.name}"
 
     def generate(self, abbr: bool = False) -> type:
@@ -374,7 +401,7 @@ class CommandGenerator:
         )
 
 
-class Wrapper:
+class Wrapper:  # noqa
     """
     Function-based CLI generator.
 
@@ -456,11 +483,13 @@ class Wrapper:
     """
 
     def __init__(self, parser: Parser, abbr: bool = True):
+        """Return a new `Wrapper`."""
         self.parser = parser
         self.abbr = abbr
 
     @staticmethod
     def default(abbr: bool = True) -> "Wrapper":
+        """Return a new default `Wrapper`."""
         return Wrapper(Parser(), abbr)
 
     def add(self, func: Callable):

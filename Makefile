@@ -5,5 +5,5 @@ dev:
 
 .PHONY: fix
 fix:  # Format py sources.
-	@pipenv run black $(BLACK_TARGET)
-	@pipenv run isort $(ISORT_TARGET)
+	@pipenv run black setup.py pkommand tests doc
+	@pipenv run isort setup.py pkommand tests doc

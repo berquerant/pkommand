@@ -57,7 +57,8 @@ class Parser(ArgumentParser):
         """Return a new `Parser`.
 
         :add_help: add `-h/--help` option.
-        :default_run: set default_run function. This has the same effect as overriding `default_run`."""
+        :default_run: set default_run function. This has the same effect as overriding `default_run`.
+        """
         kwargs["add_help"] = add_help
         super().__init__(*args, **kwargs)
         self.__default_run = default_run

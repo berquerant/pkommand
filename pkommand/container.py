@@ -1,6 +1,6 @@
 """Simple functional containers."""
 from dataclasses import dataclass
-from typing import Any, Callable, Generic, Optional, TypeVar
+from typing import Any, Callable, Generic, TypeVar
 
 from .exceptions import ContainerException
 
@@ -12,20 +12,20 @@ U = TypeVar("U")
 class Opt(Generic[T]):
     """Optional."""
 
-    value: Optional[T]
+    value: T | None
 
     @property
     def is_some(self) -> bool:
         """Return true if it's some."""
         return self.value is not None
 
-    def and_then(self, f: Callable[[T], Optional[U]]) -> "Opt[U]":
+    def and_then[U](self, f: Callable[[T], U | None]) -> "Opt[U]":
         """Call `f` if it's some."""
         if self.is_some:
             return Opt(value=f(self.get()))
         return self.none()
 
-    def then(self, f: Callable[[T], None]):
+    def then(self, f: Callable[[T], None]) -> None:
         """Call `f` if it's some."""
         if self.is_some:
             f(self.get())
@@ -42,7 +42,7 @@ class Opt(Generic[T]):
             return self.value
         return other
 
-    def flatten(self) -> "Opt":
+    def flatten(self) -> "Opt[Any]":
         """Unwrap `Opt` if it's value is also `Opt`."""
         if self.is_some and isinstance(self.value, Opt):
             return self.value
@@ -81,12 +81,12 @@ class Opt(Generic[T]):
         return Opt(value=None)
 
     @staticmethod
-    def new(value: Optional[T]) -> "Opt[T]":
+    def new(value: T | None) -> "Opt[T]":
         """Return a new `Opt`."""
         return Opt(value=value)
 
 
-def get_attribute(obj: Any, name: str) -> Opt:
+def get_attribute(obj: Any, name: str) -> Opt[Any]:
     """
     Wrap `getattr()`.
 

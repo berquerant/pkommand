@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser, Namespace, _SubParsersAction
-from typing import Dict, List, Optional, cast, final
+from typing import cast, final
 
 
 class Command(ABC):
@@ -25,7 +25,7 @@ class Command(ABC):
         """Return command help."""
 
     @abstractmethod
-    def run(self, args: Namespace):
+    def run(self, args: Namespace) -> None:
         """
         Execute the command.
 
@@ -34,7 +34,7 @@ class Command(ABC):
 
     @classmethod
     @abstractmethod
-    def register(cls, parser: ArgumentParser):
+    def register(cls, parser: ArgumentParser) -> None:
         """
         Register arguments to parser.
 
@@ -52,12 +52,12 @@ class Command(ABC):
 class CommandClassDict:
     """A dictionary contains :class: `Command` only."""
 
-    __class_dict: Dict[str, type]
+    __class_dict: dict[str, type]
 
     def __init__(self):  # noqa
         self.__class_dict = {}
 
-    def get(self, key: str) -> Optional[type]:
+    def get(self, key: str) -> type | None:
         """
         Return a :class: `Command` type.
 
@@ -66,7 +66,7 @@ class CommandClassDict:
         """
         return self.__class_dict.get(key)
 
-    def get_instance(self, key: str) -> Optional[Command]:
+    def get_instance(self, key: str) -> Command | None:
         """
         Return a `Command`.
 
@@ -78,7 +78,7 @@ class CommandClassDict:
             return None
         return cast(Command, c.new())  # type: ignore
 
-    def set(self, value):
+    def set(self, value) -> None:
         """
         Store a :class: `Command` type.
 
@@ -89,6 +89,6 @@ class CommandClassDict:
         key = value.name()
         self.__class_dict[key] = value
 
-    def keys(self) -> List[str]:
+    def keys(self) -> list[str]:
         """Return all keys."""
         return list(self.__class_dict.keys())

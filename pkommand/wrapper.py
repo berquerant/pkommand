@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from inspect import Parameter, Signature, isfunction, signature
 from textwrap import dedent
-from typing import Any, Callable, Protocol, cast
+from typing import Any, Callable, Protocol, cast, override
 
 from .command import Command
 from .container import Opt, get_attribute
@@ -119,7 +119,7 @@ class RegArg:
     args: list[Any]
     kwargs: dict[str, Any]
 
-    def apply(self, p: ArgumentParser):
+    def apply(self, p: ArgumentParser) -> None:
         """Call `add_argument`."""
         p.add_argument(*self.args, **self.kwargs)
 
@@ -127,7 +127,7 @@ class RegArg:
 class RegArgList(list[RegArg]):
     """List of `RegArg`."""
 
-    def apply(self, p: ArgumentParser):
+    def apply(self, p: ArgumentParser) -> None:
         """Call `add_argument`."""
         for a in self:
             a.apply(p)
@@ -149,6 +149,7 @@ class ParamToArg(ABC):
 class BoolParamToArg(ParamToArg):
     """Bool parameter to `RegArg` converter."""
 
+    @override
     def parse(self, p: Param) -> Opt[RegArg]:
         """Parse a function parameter into `RegArg`."""
         a = p.annotation.get()
@@ -169,6 +170,7 @@ class BoolParamToArg(ParamToArg):
 class DefaultParamToArg(ParamToArg):
     """Default parameter to `RegArg` converter."""
 
+    @override
     def parse(self, p: Param) -> Opt[RegArg]:
         """Parse a function parameter into `RegArg`."""
         a = p.annotation.get()
@@ -187,6 +189,7 @@ class DefaultParamToArg(ParamToArg):
 class OptionalParamToArg(ParamToArg):
     """Optional parameter to `RegArg` converter."""
 
+    @override
     def parse(self, p: Param) -> Opt[RegArg]:
         """Parse a function parameter into `RegArg`."""
         a = p.annotation.get()
@@ -202,6 +205,7 @@ class OptionalParamToArg(ParamToArg):
 class ListParamToArg(ParamToArg):
     """List parameter to `RegArg` converter."""
 
+    @override
     def parse(self, p: Param) -> Opt[RegArg]:
         """Parse a function parameter into `RegArg`."""
         a = p.annotation.get()
@@ -272,6 +276,7 @@ class CustomParamToArg(ParamToArg):
         parsef = Function.new(cast(Callable, parse))
         return len(parsef.signature.parameters) == 1
 
+    @override
     def parse(self, p: Param) -> Opt[RegArg]:
         """Parse a function parameter into `RegArg`."""
         a = p.annotation.get()

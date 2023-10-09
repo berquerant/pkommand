@@ -2,7 +2,7 @@
 
 import sys
 from argparse import ArgumentParser, Namespace
-from typing import Callable, Dict, List, Optional
+from typing import Callable, NoReturn, override
 
 from .command import Command, CommandClassDict
 from .exceptions import NoDefaultRunException, NoSubcommandsException, ParserException
@@ -11,26 +11,30 @@ from .exceptions import NoDefaultRunException, NoSubcommandsException, ParserExc
 class HelpCommand(Command):
     """Default help command."""
 
+    @override
     @staticmethod
     def name() -> str:  # noqa
         return "help"
 
+    @override
     @classmethod
     def help(cls) -> str:  # noqa
         return "show help and exit"
 
-    def run(self, _):  # noqa
+    @override
+    def run(self, _) -> None:  # noqa
         pass
 
+    @override
     @classmethod
-    def register(cls, parser: ArgumentParser):  # noqa
+    def register(cls, parser: ArgumentParser) -> None:  # noqa
         parser.add_argument("subcommand", nargs="?")
 
 
 def default_run_print_help(
     parser: ArgumentParser,
-    args: Optional[List[str]] = None,
-    namespace: Optional[Namespace] = None,
+    args: list[str] | None = None,
+    namespace: Namespace | None = None,
 ):
     """Print help of `parser`."""
     parser.print_help()
@@ -40,15 +44,14 @@ class Parser(ArgumentParser):
     """An ArgumentParser using :class: `Command`."""
 
     __ccd: CommandClassDict
-    __subparsers: Dict[str, ArgumentParser]
-    __default_run: Optional[Callable[[ArgumentParser, Optional[List[str]], Optional[Namespace]], None]]
+    __subparsers: dict[str, ArgumentParser]
+    __default_run: Callable[[ArgumentParser, list[str] | None, Namespace | None], None] | None
 
     def __init__(
         self,
         add_help=False,
-        default_run: Optional[
-            Callable[[ArgumentParser, Optional[List[str]], Optional[Namespace]], None]
-        ] = default_run_print_help,
+        default_run: Callable[[ArgumentParser, list[str] | None, Namespace | None], None]
+        | None = default_run_print_help,
         *args,
         **kwargs,
     ):  # noqa
@@ -65,17 +68,17 @@ class Parser(ArgumentParser):
         self.add_command_class(HelpCommand)
         self.__subparsers = {}
 
-    def error(self, message: str):  # noqa
+    def error(self, message: str) -> NoReturn:  # noqa
         # avoid exiting directly on parse_args error
         raise ParserException(message)
 
-    def _get_command_instance(self, command_name: str) -> Optional[Command]:
+    def _get_command_instance(self, command_name: str) -> Command | None:
         return self.__ccd.get_instance(command_name)
 
-    def _get_command_names(self) -> List[str]:
+    def _get_command_names(self) -> list[str]:
         return self.__ccd.keys()
 
-    def add_command_class(self, command_class):
+    def add_command_class(self, command_class) -> None:
         """
         Append a subcommand.
 
@@ -83,23 +86,26 @@ class Parser(ArgumentParser):
         """
         self.__ccd.set(command_class)
 
-    def _get_subparser(self, command_name: str) -> Optional[ArgumentParser]:
+    def _get_subparser(self, command_name: str) -> ArgumentParser | None:
         return self.__subparsers.get(command_name)
 
-    def _add_subparser(self, command_name: str, p: ArgumentParser):
+    def _add_subparser(self, command_name: str, p: ArgumentParser) -> None:
         self.__subparsers[command_name] = p
 
-    def _register_commands(self):
+    def _register_commands(self) -> None:
         if not self._get_command_names():
             raise NoSubcommandsException()
         sp = self.add_subparsers(dest="command")
         for command_name in self._get_command_names():
+            c = self._get_command_instance(command_name)
+            if not c:
+                raise NoSubcommandsException(command_name)
             self._add_subparser(
                 command_name,
-                self._get_command_instance(command_name).register_parser(sp),
+                c.register_parser(sp),
             )
 
-    def run(self, args=None, namespace=None):
+    def run(self, args=None, namespace=None) -> None:
         """
         Parse arguments and try to execute subcommand.
 
@@ -126,9 +132,12 @@ class Parser(ArgumentParser):
             print()
             print(instance.help())
             return
-        self._get_command_instance(args.command).run(args)
+        c = self._get_command_instance(args.command)
+        if not c:
+            raise NoSubcommandsException(args.command)
+        c.run(args)
 
-    def default_run(self, args: Optional[List[str]] = None, namespace: Optional[Namespace] = None):
+    def default_run(self, args: list[str] | None = None, namespace: Namespace | None = None):
         """
         Execute a process when no subcommand specified.
 
@@ -150,7 +159,7 @@ class Parser(ArgumentParser):
             self.on_parse_exception(exc=e, file=sys.stderr)
             return None
 
-    def on_parse_exception(self, exc: Exception, file=None):
+    def on_parse_exception(self, exc: Exception, file=None) -> NoReturn:
         """
         Execute on parse exception.
 

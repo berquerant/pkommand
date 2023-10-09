@@ -1,4 +1,4 @@
-"""This module provides simple functional containers."""
+"""Simple functional containers."""
 from dataclasses import dataclass
 from typing import Any, Callable, Generic, Optional, TypeVar
 

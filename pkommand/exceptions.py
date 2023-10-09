@@ -1,4 +1,4 @@
-"""This modules contains the set of pkommand's exceptions."""
+"""Set of pkommand's exceptions."""
 
 
 class ParserException(Exception):

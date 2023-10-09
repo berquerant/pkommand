@@ -9,16 +9,14 @@ name = "pypi"
 pytest = "*"
 pytest-cov = "*"
 black = "*"
-tox = "==4.11.3"
+tox = "*"
 mypy = "*"
-isort = "*"
-pydocstyle = "*"
 coverage = "*"
-pyproject-flake8 = "*"
+ruff = "*"
 
 [requires]
-python_version = "3.10"
+python_version = "3.12"
 
 [scripts]
-check = "tox -e black,isort,flake8,mypy,pydocstyle -p 4"
-test = "tox -e clean,py310,coverage-report"
+check = "tox -e black,mypy,ruff -p 3"
+test = "tox -e clean,py312,coverage-report"

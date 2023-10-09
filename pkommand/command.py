@@ -1,4 +1,4 @@
-"""This modules contains subcommand templates."""
+"""Subcommand templates."""
 
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser, Namespace, _SubParsersAction
@@ -26,7 +26,8 @@ class Command(ABC):
 
     @abstractmethod
     def run(self, args: Namespace):
-        """Execute the command.
+        """
+        Execute the command.
 
         :param args: command arguments
         """
@@ -34,7 +35,8 @@ class Command(ABC):
     @classmethod
     @abstractmethod
     def register(cls, parser: ArgumentParser):
-        """Register arguments to parser.
+        """
+        Register arguments to parser.
 
         :param parser: command parser for this command
         """
@@ -56,7 +58,8 @@ class CommandClassDict:
         self.__class_dict = {}
 
     def get(self, key: str) -> Optional[type]:
-        """Return a :class: `Command` type.
+        """
+        Return a :class: `Command` type.
 
         Returns None if not found.
         :param key: `Command.name` 's value you search
@@ -64,7 +67,8 @@ class CommandClassDict:
         return self.__class_dict.get(key)
 
     def get_instance(self, key: str) -> Optional[Command]:
-        """Return a `Command`.
+        """
+        Return a `Command`.
 
         Returns None if not found.
         :param key: `Command.name` 's value you search
@@ -75,14 +79,13 @@ class CommandClassDict:
         return cast(Command, c.new())  # type: ignore
 
     def set(self, value):
-        """Store a :class: `Command` type.
+        """
+        Store a :class: `Command` type.
 
         :param value: type whose bases contain :class: `Command`
         """
         if Command not in value.__bases__:
-            raise TypeError(
-                "unsupported value type: {}'s bases doesn't have Command".format(value)
-            )
+            raise TypeError("unsupported value type: {}'s bases doesn't have Command".format(value))
         key = value.name()
         self.__class_dict[key] = value
 

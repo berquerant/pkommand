@@ -1,4 +1,4 @@
-"""This module provides a function-based CLI."""
+"""Function-based CLI."""
 from abc import ABC, abstractmethod
 from argparse import Action, ArgumentParser, Namespace
 from dataclasses import dataclass
@@ -60,11 +60,7 @@ class Annotation:
 
         e.g. bool of bool, T of List[T], Optional[T]
         """
-        return (
-            get_attribute(self.typ, "__args__")
-            .and_then(lambda x: x[0])
-            .get_or(self.typ)
-        )
+        return get_attribute(self.typ, "__args__").and_then(lambda x: x[0]).get_or(self.typ)
 
     @property
     def wrapped(self) -> bool:
@@ -159,9 +155,7 @@ class BoolParamToArg(ParamToArg):
         if a.type != bool or a.wrapped:
             return Opt.none()
 
-        action = p.default.and_then(
-            lambda x: "store_false" if x.val else "store_true"
-        ).get_or("store_true")
+        action = p.default.and_then(lambda x: "store_false" if x.val else "store_true").get_or("store_true")
         return Opt.some(
             RegArg(
                 args=p.flag_names,
@@ -401,11 +395,12 @@ class CommandGenerator:
         )
 
 
-class Wrapper:  # noqa
+class Wrapper:
     """
     Function-based CLI generator.
 
-    Basic usage:
+    Basic usage
+    -----------
 
     ```
     from pkommand import Wrapper
@@ -419,8 +414,8 @@ class Wrapper:  # noqa
     # hello alice!
     ```
 
-    Parameters:
-
+    Parameters
+    ----------
     Input parameters must be annotated.
     Default value is used as the default value of the flag,
     without default value, the parameter is mandatory.
@@ -432,8 +427,9 @@ class Wrapper:  # noqa
     `typing.List` and `list` parameters will be the flag collects multiple arguments,
     with default `[]` implicitly.
 
-    Custom type parameter:
 
+    Custom type parameter
+    ---------------------
     The type that implements `wrapper.CustomActionProto` can be an input parameter annotation.
     For example, comma-separated string list:
 

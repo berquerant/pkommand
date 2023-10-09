@@ -1,4 +1,4 @@
-"""This module contains :class: `argparse.ArgumentParser` extensions for subcommand."""
+""":class: `argparse.ArgumentParser` extensions for subcommand."""
 
 import sys
 from argparse import ArgumentParser, Namespace
@@ -41,9 +41,7 @@ class Parser(ArgumentParser):
 
     __ccd: CommandClassDict
     __subparsers: Dict[str, ArgumentParser]
-    __default_run: Optional[
-        Callable[[ArgumentParser, Optional[List[str]], Optional[Namespace]], None]
-    ]
+    __default_run: Optional[Callable[[ArgumentParser, Optional[List[str]], Optional[Namespace]], None]]
 
     def __init__(
         self,
@@ -54,7 +52,8 @@ class Parser(ArgumentParser):
         *args,
         **kwargs,
     ):  # noqa
-        """Return a new `Parser`.
+        """
+        Return a new `Parser`.
 
         :add_help: add `-h/--help` option.
         :default_run: set default_run function. This has the same effect as overriding `default_run`.
@@ -77,7 +76,8 @@ class Parser(ArgumentParser):
         return self.__ccd.keys()
 
     def add_command_class(self, command_class):
-        """Append a subcommand.
+        """
+        Append a subcommand.
 
         :param command_class: type whose bases contain :class: `Command`
         """
@@ -100,7 +100,8 @@ class Parser(ArgumentParser):
             )
 
     def run(self, args=None, namespace=None):
-        """Parse arguments and try to execute subcommand.
+        """
+        Parse arguments and try to execute subcommand.
 
         :param args: (optional) string list to be parsed
         :param namespace: (optional) object to be assigned attributes
@@ -127,10 +128,9 @@ class Parser(ArgumentParser):
             return
         self._get_command_instance(args.command).run(args)
 
-    def default_run(
-        self, args: Optional[List[str]] = None, namespace: Optional[Namespace] = None
-    ):
-        """Execute a process when no subcommand specified.
+    def default_run(self, args: Optional[List[str]] = None, namespace: Optional[Namespace] = None):
+        """
+        Execute a process when no subcommand specified.
 
         You can override this if you also want to run without subcommand name.
 
@@ -151,7 +151,8 @@ class Parser(ArgumentParser):
             return None
 
     def on_parse_exception(self, exc: Exception, file=None):
-        """Execute on parse exception.
+        """
+        Execute on parse exception.
 
         :param exc: raised exception on parse
         :param file: output stream

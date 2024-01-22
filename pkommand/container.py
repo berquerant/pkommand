@@ -19,7 +19,7 @@ class Opt(Generic[T]):
         """Return true if it's some."""
         return self.value is not None
 
-    def and_then[U](self, f: Callable[[T], U | None]) -> "Opt[U]":
+    def and_then[U](self, f: Callable[[T], U | None]) -> "Opt[U]":  # type: ignore[valid-type]
         """Call `f` if it's some."""
         if self.is_some:
             return Opt(value=f(self.get()))

@@ -481,6 +481,7 @@ class Wrapper:
     ```
     w = Wrapper.default(abbr=False)
     ```
+
     """
 
     def __init__(self, parser: Parser, abbr: bool = True):

@@ -1,4 +1,5 @@
 """Function-based CLI."""
+
 from abc import ABC, abstractmethod
 from argparse import Action, ArgumentParser, Namespace
 from dataclasses import dataclass

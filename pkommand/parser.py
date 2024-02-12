@@ -50,8 +50,9 @@ class Parser(ArgumentParser):
     def __init__(
         self,
         add_help=False,
-        default_run: Callable[[ArgumentParser, list[str] | None, Namespace | None], None]
-        | None = default_run_print_help,
+        default_run: (
+            Callable[[ArgumentParser, list[str] | None, Namespace | None], None] | None
+        ) = default_run_print_help,
         *args,
         **kwargs,
     ):  # noqa

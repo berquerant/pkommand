@@ -1,4 +1,5 @@
 """Simple functional containers."""
+
 from dataclasses import dataclass
 from typing import Any, Callable, Generic, TypeVar
 

@@ -154,7 +154,7 @@ class BoolParamToArg(ParamToArg):
     def parse(self, p: Param) -> Opt[RegArg]:
         """Parse a function parameter into `RegArg`."""
         a = p.annotation.get()
-        if a.type != bool or a.wrapped:
+        if a.type is not bool or a.wrapped:
             return Opt.none()
 
         action = p.default.and_then(lambda x: "store_false" if x.val else "store_true").get_or("store_true")

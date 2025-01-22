@@ -30,5 +30,7 @@ jobs:
         run: python setup.py sdist
       - name: Lint
         run: pipenv run check
+      - name: Vuln
+        run: pipenv check
       - name: Test
         run: pipenv run test

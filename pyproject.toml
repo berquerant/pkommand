@@ -1,9 +1,20 @@
+[project]
+name = "pkommand"
+readme = "README.md"
+description = "A small subcommand parser"
+version = "0.0.1"
+requires-python = "~=3.12"
+dependencies = []
+
 [build-system]
 requires = [
     "setuptools>=43",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = []
 
 [tool.ruff]
 exclude = [
@@ -25,6 +36,13 @@ exclude = [
   ".coverage",
 ]
 line-length = 120
+
+[tool.uv]
+package = true
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
 
 [tool.ruff.lint]
 select = [
@@ -57,10 +75,3 @@ pretty = true
 
 [tool.black]
 line-length = 120
-
-[tool.coverage.run]
-omit = [
-  ".tox/*",
-  "tests/*",
-  "doc/*",
-]

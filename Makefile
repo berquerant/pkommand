@@ -1,15 +1,15 @@
 .PHONY: dev
 dev:
-	@pipenv run check
-	@pipenv run test
+	@uvx tox run-parallel -m check --parallel-no-spinner --parallel-live
+	@uvx tox run-parallel -m test --parallel-no-spinner --parallel-live
 
 .PHONY: fix
 fix: black ruff # Format py sources.
 
 .PHONY: black
 black:
-	@pipenv run black setup.py pkommand tests doc
+	@uvx black setup.py pkommand tests doc
 
 .PHONY: ruff
 ruff:
-	@pipenv run ruff setup.py pkommand tests doc
+	@uvx ruff setup.py pkommand tests doc

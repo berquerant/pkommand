@@ -1,0 +1,13 @@
+version = 1
+revision = 2
+requires-python = ">=3.12, <4"
+
+[[package]]
+name = "pkommand"
+version = "0.0.1"
+source = { editable = "." }
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = []

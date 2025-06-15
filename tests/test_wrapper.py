@@ -256,7 +256,7 @@ def jump(world: str, t: str):
             """usage: pytest jump -w WORLD -t T
 
 options:
-  -w WORLD, --world WORLD
+  -w, --world WORLD
   -t T
 
 jump to the world point

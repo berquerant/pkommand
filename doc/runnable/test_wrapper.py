@@ -30,7 +30,7 @@ positional arguments:
         """usage: pytest hello -t TARGET
 
 options:
-  -t TARGET, --target TARGET
+  -t, --target TARGET
 
 say hello
 """

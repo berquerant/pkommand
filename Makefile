@@ -3,6 +3,8 @@ dev:
 	@uvx tox run-parallel -m check --parallel-no-spinner --parallel-live
 	@uvx tox run-parallel -m test --parallel-no-spinner --parallel-live
 
+ci: dev
+
 .PHONY: fix
 fix: black ruff # Format py sources.
 
